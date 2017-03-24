@@ -22,7 +22,7 @@ run the script, like this:
 ```
 git clone https://github.com/kungfujam/mendeley-viz.git
 cd mendeley-viz
-conda create -n mviz python=2 pandas
+conda create -n mviz python=2 pandas beautifulsoup4
 source activate mviz
 pip install html2text
 ./export_notes.py -h
