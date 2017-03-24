@@ -57,13 +57,12 @@ def export_notes(outdir, folder=None):
     folders = pd.read_sql_query("SELECT * from {}".format(table_name), db)
     table_name = 'DocumentFolders'
     docfolders = pd.read_sql_query("SELECT * from {}".format(table_name), db)
-    
-    assert folder in folders['name'].values, \
-        "Folder name [{}] not found. ".format(folder) + \
-        "Check name matches folder name in the Mendeley GUI exactly."
         
     # get notes from required mendeley folder
     if folder is not None:
+        assert folder in folders['name'].values, \
+            "Folder name [{}] not found. ".format(folder) + \
+            "Check name matches folder name in the Mendeley GUI exactly."
         folders_ = folders.loc[folders['name'] == folder, ['id', 'name']]
         folders_.rename(columns={'id': 'folderId', 'name': 'folderName'}, 
                         inplace=True)
@@ -108,9 +107,9 @@ if __name__ == '__main__':
             '\n\n\t"{}".'.format(doc_name_str))
     parser.add_argument('outdir', type=str,
             help='Target folder to save the outputs. Must already exist!')
-    parser.add_argument('folder', type=str, default=None,
+    parser.add_argument('-f', '--folder', type=str, default=None, nargs=1,
             help='Name of the Mendeley folder to extract notes from. '
-            'If left blank, all notes will be exported.')
+            'If ommited, all notes will be exported.')
 
     args = parser.parse_args()
     outdir = os.path.abspath(args.outdir)
