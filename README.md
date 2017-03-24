@@ -1,5 +1,16 @@
 # mendeley-viz
-Tools to extract notes from, and visualise mendeley libraries (currently only for UNIX)
+Tools to extract notes from, and visualise mendeley libraries (currently only tested on UNIX)
+
+## Motivation
+If you, like me, use Mendeley to create your bibliographies but not to create notes about
+them (because the edit tools are woeful!), these scripts may enable you to use Mendeley for
+note taking too... 
+
+In short - within the Mendeley gui, if you write markdown formatted notes in the 'General notes' 
+box for each paper, running the script export_notes.py create an individual markdown file for each 
+note you made. This will allow you to read them much easier (esp if you view on github.com). 
+
+I'll write import_notes.py soon such that you can edit these notes externally too.
 
 ## Install
 Currently this is just one script: `export_notes.py`. To run it
