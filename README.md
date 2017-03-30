@@ -34,6 +34,7 @@ ls test
 ## TODO
 1. Write a script, `import_notes`, that does the reverse of `export_notes`, 
 allowing users to edit notes externally and put them back in the database
+1. Write script which outputs number of papers on a timeline
 1. Write visualization script that generates input for Gephi to visualize networks
   - Start by just making networks people and papers
   - Decide how to split into 'documents' and 'entities'...
