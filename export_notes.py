@@ -20,7 +20,6 @@ import os
 import pandas as pd
 import sys
 import html2text
-import csv
 import argparse
 
 try:
@@ -85,16 +84,8 @@ def export_notes(outdir, folder=None):
                 docid=group['documentId'].values[0],
                 title=group['title'].values[0])
         out = '{}{}{}.md'.format(outdir, os.sep, fn)
-        # This was the only way I found to avoid the single field
-        # being exported wrapped in quotes. It will introduce additional spaces
-        group.to_csv(
-                out,
-                columns=['mdText'],
-                index=False,
-                quoting=csv.QUOTE_NONE, 
-                header=False, 
-                escapechar=' ',
-                encoding='utf-8')
+        with open(out, 'w') as f:
+            f.write(group['mdText'].values[0])
 
 
 if __name__ == '__main__':
