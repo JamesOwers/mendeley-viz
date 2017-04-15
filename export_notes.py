@@ -21,6 +21,7 @@ import pandas as pd
 import sys
 import html2text
 import argparse
+import platform
 
 try:
     DATABASE_LOC = os.environ['MENDELEY_DATABASE_LOC']
@@ -37,9 +38,9 @@ except KeyError:
         'your terminal.'
     print(msg, file=sys.stderr)
     raise
+    
 
-
-def export_notes(outdir, folder=None):
+def export_notes(outdir, folder=None, print_empties=False):
     """
     Reads the mendeley sqlite database and extracts notes as .md
     files to a given folder. This is intended to allow users of
@@ -57,6 +58,7 @@ def export_notes(outdir, folder=None):
     table_name = 'DocumentFolders'
     docfolders = pd.read_sql_query("SELECT * from {}".format(table_name), db)
         
+    
     # get notes from required mendeley folder
     if folder is not None:
         assert folder in folders['name'].values, \
@@ -66,23 +68,43 @@ def export_notes(outdir, folder=None):
         folders_.rename(columns={'id': 'folderId', 'name': 'folderName'}, 
                         inplace=True)
         docfolders_ = pd.merge(docfolders, folders_)
-        notes_ = pd.merge(notes, docfolders_)
+        if platform.system() == 'Darwin':
+            docfolders_.rename(columns={'documentId': 'id'}, inplace=True)
+            notes_ = pd.merge(documents[['id', 'note']], docfolders_).rename(
+                     columns={'note': 'text'})
+            notes_['documentId'] = notes_['id']
+            notes_.loc[notes_['text'].isnull(), 'text'] = ''
+        elif platform.system() == 'Linux':
+            docfolders_ = pd.merge(docfolders, folders_)
+            notes_ = pd.merge(notes, docfolders_)
     else:
-        notes_ = notes
-    
-    # Get document level information    
+        if platform.system() == 'Darwin':
+            notes_ = documents[['id', 'note']].rename(
+                     columns={'note': 'text'})
+            notes_['documentId'] = notes_['id']
+            notes_.loc[notes_['text'].isnull(), 'text'] = ''
+        elif platform.system() == 'Linux':
+            notes_ = notes
+        
+    # Get document level information and merge, selecting only docs from folder 
     notes_['mdText'] = notes_['text'].apply(html2text.html2text)
     notes_.rename(columns={'id': 'noteId'}, inplace=True)
     notes__ = pd.merge(notes_, 
                        documents[['id', 'title', 'citationKey']].\
                            rename(columns={'id': 'documentId'}))
-    
     # Export each note to a .md file
     for name, group in notes__.groupby('noteId'):
+        if not print_empties:
+            if group['mdText'].values[0].strip() == '':
+                continue
+        print('Printing documentId {} - {}'.format(name, 
+              group['title'].values[0]))
+        # Some filenames contain : and / - cleaned using replace
         fn = doc_name_str.format(
                 citationKey=group['citationKey'].values[0],
                 docid=group['documentId'].values[0],
-                title=group['title'].values[0])
+                title=group['title'].values[0].replace('/','').\
+                    replace(':', '-'))
         out = '{}{}{}.md'.format(outdir, os.sep, fn)
         with open(out, 'w') as f:
             f.write(group['mdText'].values[0])
@@ -101,9 +123,18 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--folder', type=str, default=None, nargs=1,
             help='Name of the Mendeley folder to extract notes from. '
             'If ommited, all notes will be exported.')
+    parser.add_argument('-b', '--blanks', type=bool, default=False, 
+                        help='Print blank notes.')
 
     args = parser.parse_args()
     outdir = os.path.abspath(args.outdir)
-    folder = args.folder
-    export_notes(outdir, folder)
+    folder = args.folder[0]
+    print('Getting notes from {}'.format(folder))
+    print('Printing notes to {}'.format(outdir))
+    if args.blanks:
+        print('Printing blank notes')
+    else:
+        print('Not printing blank notes')
+    print('{}'.format('='*20))
+    export_notes(outdir, folder, print_empties=args.blanks)
     
