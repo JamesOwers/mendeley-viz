@@ -58,7 +58,6 @@ def export_notes(outdir, folder=None, print_empties=False):
     table_name = 'DocumentFolders'
     docfolders = pd.read_sql_query("SELECT * from {}".format(table_name), db)
         
-    
     # get notes from required mendeley folder
     if folder is not None:
         assert folder in folders['name'].values, \
@@ -68,23 +67,30 @@ def export_notes(outdir, folder=None, print_empties=False):
         folders_.rename(columns={'id': 'folderId', 'name': 'folderName'}, 
                         inplace=True)
         docfolders_ = pd.merge(docfolders, folders_)
-        if platform.system() == 'Darwin':
+        if platform.system() in ['Darwin', 'Linux']:
             docfolders_.rename(columns={'documentId': 'id'}, inplace=True)
             notes_ = pd.merge(documents[['id', 'note']], docfolders_).rename(
                      columns={'note': 'text'})
             notes_['documentId'] = notes_['id']
             notes_.loc[notes_['text'].isnull(), 'text'] = ''
-        elif platform.system() == 'Linux':
-            docfolders_ = pd.merge(docfolders, folders_)
-            notes_ = pd.merge(notes, docfolders_)
+        else:
+            ## Old method using notes table (appears defunct now)
+            # docfolders_ = pd.merge(docfolders, folders_)
+            # notes_ = pd.merge(notes, docfolders_)
+            print('Only tested on Linux and Unix. See Read and search database.ipynb ',
+                  'to work out how the mendeley database works on window (it may be the same!)')
+            raise NotImplementedError()
     else:
-        if platform.system() == 'Darwin':
+        if platform.system() in ['Darwin', 'Linux']:
             notes_ = documents[['id', 'note']].rename(
                      columns={'note': 'text'})
             notes_['documentId'] = notes_['id']
             notes_.loc[notes_['text'].isnull(), 'text'] = ''
-        elif platform.system() == 'Linux':
-            notes_ = notes
+        else:
+            # notes_ = notes
+            print('Only tested on Linux and Unix. See Read and search database.ipynb ',
+                  'to work out how the mendeley database works on window (it may be the same!)')
+            raise NotImplementedError()
         
     # Get document level information and merge, selecting only docs from folder 
     notes_['mdText'] = notes_['text'].apply(html2text.html2text)
@@ -92,7 +98,8 @@ def export_notes(outdir, folder=None, print_empties=False):
     notes__ = pd.merge(notes_, 
                        documents[['id', 'title', 'citationKey']].\
                            rename(columns={'id': 'documentId'}))
-    # Export each note to a .md file
+    
+    # Export each note to an individual .md file
     for name, group in notes__.groupby('noteId'):
         if not print_empties:
             if group['mdText'].values[0].strip() == '':
