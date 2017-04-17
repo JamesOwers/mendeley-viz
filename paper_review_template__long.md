@@ -22,6 +22,9 @@ _What are the paper's main contributions? What questions does the paper attempt 
 ## Clarity
 _Is the paper well written?_
 
+## Notes
+_Anything else? Quick summary for what to look for on next pass_
+
 
 2nd Pass
 ========

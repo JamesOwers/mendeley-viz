@@ -16,6 +16,8 @@
 
 ## Clarity
 
+## Notes
+
 
 2nd Pass
 ========
