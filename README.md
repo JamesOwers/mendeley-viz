@@ -37,4 +37,5 @@ allowing users to edit notes externally and put them back in the database
 1. Write script which outputs number of papers on a timeline
 1. Write visualization script that generates input for Gephi to visualize networks
   - Start by just making networks people and papers
+     - see [here](http://miriamposner.com/dh101f15/index.php/creating-a-network-graph-with-gephi/) for an example of how to create visualise an 'edge table' csv
   - Decide how to split into 'documents' and 'entities'...
